@@ -3,9 +3,581 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>TaskPlatform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --accent-color: #8e44ad;
+            --accent-light: #9b59b6;
+            --accent-dark: #6c3483;
+            --light-bg: #f7f9fc;
+            --dark-text: #2c3e50;
+            --mid-text: #34495e;
+            --light-text: #7f8c8d;
+            --lightest-text: #bdc3c7;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        
+        .accent-gradient {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+        }
+        
+        .top-navigation {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .brand-logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+        
+        .brand-logo i {
+            font-size: 1.8rem;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        
+        .content-shell {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .section-heading {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            border-radius: 16px;
+            padding: 60px 40px;
+            color: white;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.2;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .action-btn {
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .action-btn-primary {
+            background-color: white;
+            color: var(--accent-color);
+        }
+        
+        .action-btn-primary:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--accent-dark);
+        }
+        
+        .action-btn-outline {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        
+        .action-btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            height: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .feature-icon-purple {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .feature-icon-blue {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--info);
+        }
+        
+        .feature-icon-green {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+        }
+        
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-text);
+        }
+        
+        .feature-text {
+            color: var(--mid-text);
+            line-height: 1.6;
+        }
+        
+        .how-it-works {
+            padding: 50px 0;
+        }
+        
+        .step-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            z-index: 2;
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-text);
+        }
+        
+        .step-text {
+            color: var(--mid-text);
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent-light));
+            border-radius: 16px;
+            padding: 50px 40px;
+            color: white;
+            text-align: center;
+            margin: 60px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .cta-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .cta-text {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        footer {
+            background-color: white;
+            border-top: 1px solid #ecf0f1;
+            padding: 20px 0;
+            margin-top: 100px;
+        }
+        
+
+        #loginDialog {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .dialog-container {
+            background-color: white;
+            margin: 10% auto;
+            width: 400px;
+            max-width: 90%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .dialog-header {
+            padding: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            position: relative;
+        }
+        
+        .dialog-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .dialog-body {
+            padding: 20px;
+        }
+        
+        .dialog-footer {
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-section {
+                padding: 40px 20px;
+            }
+            
+            .action-btn {
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    Hello world
+
+    <nav class="top-navigation py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/" class="brand-logo text-decoration-none">
+                    <i class="bi bi-kanban"></i>
+                    TaskPlatform
+                </a>
+                <div class="d-flex align-items-center">
+                    <div id="authControls">
+                        <button type="button" class="action-btn action-btn-primary" onclick="openLoginDialog()">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container content-shell">
+
+        <div class="hero-section">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <h1 class="hero-title">Manage Tasks, Boost Productivity</h1>
+                    <p class="hero-subtitle">Organize your projects, collaborate with your team, and track progress all in one place.</p>
+                    <div class="hero-actions">
+                        <div class="auth-only d-none">
+                            <a href="/taskboards" class="action-btn action-btn-primary me-3">
+                                <i class="bi bi-kanban me-2"></i>My Workspaces
+                            </a>
+                            <a href="/tasksboards/create" class="action-btn action-btn-outline">
+                                <i class="bi bi-plus-lg me-2"></i>Create Workspace
+                            </a>
+                        </div>
+                        <div class="non-auth-only">
+                            <p class="mb-4">Sign in to start organizing your tasks and projects.</p>
+                            <button onclick="openLoginDialog()" class="action-btn action-btn-primary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Get Started
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="col-lg-5 d-none d-lg-block">
+                    <img src="https://via.placeholder.com/500x350" alt="Task management illustration" class="img-fluid rounded-3 shadow">
+                </div> -->
+            </div>
+        </div>
+        
+
+        <div class="features-section">
+            <h2 class="section-heading text-center mb-5">Powerful Features to Streamline Your Workflow</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-purple">
+                            <i class="bi bi-kanban"></i>
+                        </div>
+                        <h3 class="feature-title">Workspace Organization</h3>
+                        <p class="feature-text">Create dedicated workspaces for different projects and keep all your tasks neatly organized in one place.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-blue">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h3 class="feature-title">Team Collaboration</h3>
+                        <p class="feature-text">Invite team members to your workspaces, assign tasks, and collaborate efficiently on projects.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-green">
+                            <i class="bi bi-check2-square"></i>
+                        </div>
+                        <h3 class="feature-title">Progress Tracking</h3>
+                        <p class="feature-text">Set deadlines, track task statuses, and monitor project progress with comprehensive tools.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="how-it-works">
+            <h2 class="section-heading text-center mb-5">How TaskPlatform Works</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3 class="step-title">Create a Workspace</h3>
+                        <p class="step-text">Start by creating a dedicated workspace for your project. Give it a descriptive name to help your team identify it easily.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3 class="step-title">Add Team Members</h3>
+                        <p class="step-text">Invite teammates to collaborate on your workspace. Each member will have access to view and manage tasks.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3 class="step-title">Create & Assign Tasks</h3>
+                        <p class="step-text">Add tasks to your workspace, provide detailed descriptions, set deadlines, and assign them to team members.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <h3 class="step-title">Track & Complete</h3>
+                        <p class="step-text">Monitor progress, update task statuses, and mark tasks as complete. Keep everyone on the same page with real-time updates.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="cta-section">
+            <h2 class="cta-title">Ready to Streamline Your Task Management?</h2>
+            <p class="cta-text">Join thousands of teams who use TaskPlatform to organize their projects and boost productivity.</p>
+            <div class="auth-only d-none">
+                <a href="/taskboards" class="action-btn action-btn-primary">
+                    <i class="bi bi-kanban me-2"></i>Go to My Workspaces
+                </a>
+            </div>
+            <div class="non-auth-only">
+                <button onclick="openLoginDialog()" class="action-btn action-btn-primary">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Get Started Now
+                </button>
+            </div>
+        </div>
+        
+
+        <div class="about-section">
+            <h2 class="section-heading mb-4">About TaskPlatform</h2>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="feature-card">
+                        <p>TaskPlatform is designed to help teams of all sizes manage their projects more efficiently. Our platform allows you to:</p>
+                        <ul class="mt-3">
+                            <li class="mb-2">Create task workspaces to organize your projects</li>
+                            <li class="mb-2">Add team members to collaborate on workspaces</li>
+                            <li class="mb-2">Create, assign, and track tasks</li>
+                            <li class="mb-2">Set due dates and mark tasks as complete</li>
+                            <li class="mb-2">Manage workspace members and permissions</li>
+                        </ul>
+                        <p class="mt-3"><strong>Note:</strong> You must be logged in to create and manage task workspaces.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <div id="loginDialog">
+        <div class="dialog-container">
+            <div class="dialog-header">
+                <h4 class="m-0">Account Login</h4>
+                <span class="dialog-close" onclick="closeLoginDialog()">&times;</span>
+            </div>
+            <div class="dialog-body">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Enter your password">
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="btn btn-primary w-100" id="login">Login</button>
+                <button type="button" class="btn btn-outline-secondary w-100" id="sign-up">Create Account</button>
+            </div>
+        </div>
+        <button id="sign-out" style="display: none;">Sign out</button>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">TaskPlatform</p>
+                </div>
+                <div class="col-md-6 text-end">
+                     <p class="mb-0">Cloud Platforms & Applications</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script type="module" src="{{ url_for('static', path='/firebase-login.js') }}"></script>
+    
+    <script>
+       
+        function openLoginDialog() {
+            document.getElementById('loginDialog').style.display = 'flex';
+        }
+        
+        function closeLoginDialog() {
+            document.getElementById('loginDialog').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const dialog = document.getElementById('loginDialog');
+            if (event.target === dialog) {
+                closeLoginDialog();
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            function checkAuthStatus() {
+                const isAuthenticated = window.localStorage.getItem('user') !== null;
+                
+                const authElements = document.querySelectorAll('.auth-only');
+                const nonAuthElements = document.querySelectorAll('.non-auth-only');
+                
+                if (isAuthenticated) {
+                    authElements.forEach(el => el.classList.remove('d-none'));
+                    nonAuthElements.forEach(el => el.classList.add('d-none'));
+                    
+                   
+                    const userInfo = JSON.parse(window.localStorage.getItem('user'));
+                    document.getElementById('authControls').innerHTML = `
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-2"></i>${userInfo.email || 'User'}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/taskboards">My Workspaces</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class="dropdown-item text-danger" onclick="document.getElementById('sign-out').click()">Sign Out</button></li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    authElements.forEach(el => el.classList.add('d-none'));
+                    nonAuthElements.forEach(el => el.classList.remove('d-none'));
+                    
+                  
+                    document.getElementById('authControls').innerHTML = `
+                        <button type="button" class="btn btn-primary" onclick="openLoginDialog()">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                    `;
+                }
+            }
+            
+            
+            checkAuthStatus();
+            
+            
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'user') {
+                    checkAuthStatus();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

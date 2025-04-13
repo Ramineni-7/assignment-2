@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google.auth.transport import requests
 from google.cloud import firestore
-from pydantic_models.models import Taskboard,Task
+from pydantic_models.models import Task
 from services.service import Service
 import google.oauth2.id_token
 from fastapi.responses import RedirectResponse

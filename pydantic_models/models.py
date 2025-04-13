@@ -1,14 +1,30 @@
 from typing import List, Optional
 
 from datetime import date, time, datetime
+from fastapi import Form
 from pydantic import BaseModel, Field
 
 
 class Workspace(BaseModel):
     title: str
     created_by: str
-    users: List[str]
+    users: Optional[List[str]] = [] 
     last_updated: Optional[datetime] = None
+
+    @classmethod
+    def from_form(
+        cls,
+        title: str = Form(...),
+        created_by: str = Form(...),
+        selected_users: str = Form("")
+    ):
+        return cls(
+            title=title,
+            created_by=created_by,
+            users=[u.strip() for u in selected_users.split(",") if u.strip()] if selected_users else [],
+            last_updated=datetime.utcnow()
+        )
+
 
 class Task(BaseModel):
     title: str

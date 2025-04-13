@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google.auth.transport import requests
 from google.cloud import firestore
-from pydantic_models.models import Task
+from pydantic_models.models import Task, Workspace
 from services.service import Service
 import google.oauth2.id_token
 from fastapi.responses import RedirectResponse
@@ -33,7 +33,8 @@ def create_user_into_firestore(request:Request):
     
 def check_login_and_return_user(request:Request):
     try:
-        return Service.check_login_and_return_user(request)
+        user = Service.check_login_and_return_user(request)
+        return user
     except Exception as e:
         raise Exception (str(e))
     
@@ -55,29 +56,51 @@ def get_workspaces_of_user(request:Request):
             status_code=303
         )
 
-@app.get("workspaces/create",response_class=RedirectResponse)
+@app.get("/workspaces/create",response_class=HTMLResponse)
 def create_workspaces(request:Request):
     try:
+        print("hello")
         user = check_login_and_return_user(request)
-        if user:
+        print(user)
+        print("hello")
+        if user :
+            print('call here ')
             users = Service.get_all_users()
+            print('inside')
             return templates.TemplateResponse(
-            "add-task-board.html",
-            {
-                "request": request,
-                "users": users,
-                "current_user": user,
-                "board": None
-            }
-        )
+            "create_workspace.html",
+                {
+                    "request": request,
+                    "users": users,
+                    "current_user": user,
+                    "board": None
+                }
+            )
+        else:
+            print("not logged in")
+            return RedirectResponse(url="/", status_code=302)
     except Exception as e:
         print(e)
         return RedirectResponse(url="/")
     
-@app.post("workspaces/create",response_class=RedirectResponse)
-def create_workspace(request:Request):
+@app.post("/workspaces/create",response_class=RedirectResponse)
+def create_workspace(request:Request,workspace: Workspace = Depends(Workspace.from_form)):
+    user = Service.check_login_and_return_user(request)
     try:
-
-        pass
+        if user:
+            Service.create_workspace(workspace,user)
+        else :
+            return RedirectResponse(url="/",status_code=303)
+        return RedirectResponse(
+            url="/workspaces",
+            status_code=303
+        )
     except Exception as e:
-        pass
+        return templates.TemplateResponse(
+           "add-task-board.html", 
+            {"request": request,
+             "users":Service.get_all_users(),
+             "current_user":user,
+             "board": None,
+             "error":str(e)
+            })

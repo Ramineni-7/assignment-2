@@ -3,8 +3,9 @@ from google.auth.transport import requests
 from google.cloud import firestore
 import google.oauth2.id_token
 from fastapi import Request
+from fastapi import HTTPException
 
-from pydantic_models.models import User, WorkspaceSummary
+from pydantic_models.models import User, Workspace, WorkspaceSummary
 
 firestore_db = firestore.Client()
 
@@ -26,11 +27,13 @@ class Service:
             email = user_token.get("email")
             if not email:
                 return None
-
-            return {
+            print("verified")
+            user = {
                 "email": email,
                 "name": email.split("@")[0]
             }
+            print(user)
+            return user
         except Exception:
             return None
 
@@ -113,4 +116,26 @@ class Service:
     
     @staticmethod
     def get_all_users() -> List[User]:
+        print('in service users')
         users =  [doc.to_dict() for doc in firestore_db.collection("users").stream()]
+        print('problem is here')
+        print('users')
+        return users
+    
+    @staticmethod
+    def create_workspace(workspace:Workspace,user:User):
+        try:
+            if firestore_db.collection("workspaces").where("title", "==", workspace.title).limit(1).get():
+                raise HTTPException(status_code=400, detail="Workspace name already exists. Please choose a different name.")
+            existing_users_docs = firestore_db.collection("users").stream()
+            existing_emails = {doc.to_dict().get("email") for doc in existing_users_docs}
+            invalid_users = [u for u in workspace.users if u not in existing_emails]
+            if invalid_users:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"These users were not found in the system: {', '.join(invalid_users)}"
+                )
+            firestore_db.collection("workspaces").add(workspace.dict())
+        except Exception as e:
+            raise Exception(str(e))
+            

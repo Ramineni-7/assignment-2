@@ -91,7 +91,6 @@
         </div>
     </div>
     
-    <!-- How It Works Section -->
     <div class="mb-16">
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <div class="p-8">
@@ -189,7 +188,7 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function checkAuth() {
+        function check_is_user_logged_in() {
             const isAuthenticated = window.localStorage.getItem('user') !== null;
             
             const authElements = document.querySelectorAll('.auth-only');
@@ -204,11 +203,11 @@
             }
         }
         
-        checkAuth();
+        check_is_user_logged_in();
         
         window.addEventListener('storage', function(e) {
             if (e.key === 'user') {
-                checkAuth();
+                check_is_user_logged_in();
             }
         });
     });

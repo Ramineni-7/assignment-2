@@ -338,7 +338,7 @@
         }
         
         // Auth status check
-        function checkAuthStatus() {
+        function check_is_user_logged_in() {
             const token = parseCookieToken(document.cookie);
             if (token.length > 0) {
                 // User is logged in
@@ -466,10 +466,10 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuthStatus();
+            check_is_user_logged_in();
             
             // Check auth status periodically
-            setInterval(checkAuthStatus, 2000);
+            setInterval(check_is_user_logged_in, 2000);
         });
     </script>
     {% block scripts %}{% endblock %}

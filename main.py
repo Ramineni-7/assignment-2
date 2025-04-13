@@ -51,6 +51,7 @@ def get_workspaces_of_user(request:Request):
             {"request":request,"workspaces":workspaces,"user":user}
         )
     except Exception as e:
+        print(e)
         return RedirectResponse(
             url=f"/workspaces?error={str(e)}",
             status_code=303

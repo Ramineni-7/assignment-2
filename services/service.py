@@ -67,8 +67,12 @@ class Service:
         try:
             summaries = []
             seen_ids = set()
-            member_query = firestore_db.collection("workspaces").where("users", "array_contains", user.email).stream()
-            creator_query = firestore_db.collection("workspaces").where("created_by", "==", user.email).stream()
+            print(user)
+            print(type(user))
+            member_query = firestore_db.collection("workspaces").where("users", "array_contains", user['email']).stream()
+            creator_query = firestore_db.collection("workspaces").where("created_by", "==", user['email']).stream()
+            print(member_query)
+            print(creator_query)
 
             for doc in list(member_query) + list(creator_query):
                 if doc.id in seen_ids:

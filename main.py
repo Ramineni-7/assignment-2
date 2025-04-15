@@ -122,7 +122,7 @@ def get_workspace(request:Request,workspace_id:str,error: Optional[str] = None):
             "error": error 
         })
     except Exception as e:
-        pass
+        return RedirectResponse(url="/",status_code=303)
 
 @app.post("/workspaces/{workspace_id}")
 def update_workspace(request: Request, workspace_id: str, workspace: Workspace = Depends(Workspace.from_form)):
@@ -151,7 +151,7 @@ def update_workspace(request: Request, workspace_id: str, workspace: Workspace =
     
 @app.post("/workspaces/{workspace_id}/tasks",response_class=RedirectResponse)
 def create_task(request:Request,workspace_id:str,task:Task=Depends(Task.from_form)):
-    print("no hit")
+
     user=check_login_and_return_user(request)
     try:
         if user:
@@ -174,6 +174,7 @@ def update_task(request:Request,workspace_id,task_id,task:Task=Depends(Task.from
     user = check_login_and_return_user(request)
     try:
         if user:
+            task.workspace_id = workspace_id
             Service.update_task(workspace_id,task_id,task,user)
             return RedirectResponse(
             url=f"/workspaces/{workspace_id}",

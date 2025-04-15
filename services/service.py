@@ -142,7 +142,7 @@ class Service:
     def create_task(workspace_id:str,task:Task,user:User):
         try:
             workspace = Service.get_workspace(user,workspace_id)
-            if workspace["board"]["created_by"] != user["email"] and user.email not in workspace['board']['users']:
+            if workspace["board"]["created_by"] != user["email"] and user['email'] not in workspace['board']['users']:
                 raise PermissionError("Only the memebers can add tasks to this workspace.")
             existing_task = (
                 firestore_db.collection('tasks')
@@ -174,7 +174,8 @@ class Service:
             if workspace["board"]["created_by"] != user["email"] and user['email'] not in workspace['board']['users']:
                 raise PermissionError("Only the memebers can add/update tasks to this workspace.")
             print(task.workspace_id)
-            print(workspa)
+            print('--88--9999')
+            print(workspace_id)
             if task.workspace_id != workspace_id:
                 raise Exception("Task does not belongs to given workspace id")
             task_ref = firestore_db.collection("tasks").document(task_id)
@@ -322,11 +323,15 @@ class Service:
         try:
             workspace_snapshot = firestore_db.collection("workspaces").document(workspace_id).get()
             if not workspace_snapshot.exists:
-                raise ValueError(f"Task board with ID '{workspace_id}' does not exist.")
+                raise ValueError(f"Workspace with ID '{workspace_id}' does not exist.")
             workspace_data = workspace_snapshot.to_dict()
             workspace_data["id"] = workspace_snapshot.id
             users = Service.get_all_users()
             board = workspace_data
+            created_by = workspace_data.get("created_by")
+            workspace_users = workspace_data.get("users", [])
+            if not (user['email'] == created_by or user['email'] in workspace_users):
+                raise PermissionError("User does not have access to this workspace.")
             response = {
                 'users':users,
                 'current_user':user,

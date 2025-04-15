@@ -100,7 +100,7 @@ def create_workspace(request:Request,workspace: Workspace = Depends(Workspace.fr
         )
     except Exception as e:
         return templates.TemplateResponse(
-           "add-task-board.html", 
+           "create_workspace.html", 
             {"request": request,
              "users":Service.get_all_users(),
              "current_user":user,
@@ -126,6 +126,7 @@ def get_workspace(request:Request,workspace_id:str,error: Optional[str] = None):
 
 @app.post("/workspaces/{workspace_id}")
 def update_workspace(request: Request, workspace_id: str, workspace: Workspace = Depends(Workspace.from_form)):
+    print("but wby")
     user = Service.check_login_and_return_user(request)
     try:
        result = Service.update_workspace(request,workspace_id,user,workspace)
@@ -139,7 +140,7 @@ def update_workspace(request: Request, workspace_id: str, workspace: Workspace =
     except Exception as e:
         task_board = Service.get_workspace(user,workspace_id,)
         tasks =[]
-        return templates.TemplateResponse("add-task-board.html", {
+        return templates.TemplateResponse("create_workspace.html", {
             "request": request,
             "users": Service.get_all_users(),
             "current_user": user,
@@ -150,9 +151,11 @@ def update_workspace(request: Request, workspace_id: str, workspace: Workspace =
     
 @app.post("/workspaces/{workspace_id}/tasks",response_class=RedirectResponse)
 def create_task(request:Request,workspace_id:str,task:Task=Depends(Task.from_form)):
+    print("no hit")
     user=check_login_and_return_user(request)
     try:
         if user:
+            task.workspace_id = workspace_id
             Service.create_task(workspace_id,task,user)
             return RedirectResponse(
             url=f"/workspaces/{workspace_id}",
@@ -171,7 +174,7 @@ def update_task(request:Request,workspace_id,task_id,task:Task=Depends(Task.from
     user = check_login_and_return_user(request)
     try:
         if user:
-            Service.update_task(workspace_id,task,user,task_id)
+            Service.update_task(workspace_id,task_id,task,user)
             return RedirectResponse(
             url=f"/workspaces/{workspace_id}",
             status_code=303
@@ -179,6 +182,7 @@ def update_task(request:Request,workspace_id,task_id,task:Task=Depends(Task.from
         else:
             return RedirectResponse(url="/",status_code=303)
     except Exception as e:
+       print(e)
        return RedirectResponse(
             url=f"/workspaces/{workspace_id}?error={str(e)}",
             status_code=303
@@ -186,7 +190,7 @@ def update_task(request:Request,workspace_id,task_id,task:Task=Depends(Task.from
     
 @app.delete("/workspaces/{workspace_id}/tasks/{task_id}")
 def delete_task(request:Request,workspace_id:str,task_id:str):
-    user = check_login_and_return_user(user)
+    user = check_login_and_return_user(request)
     try:
         Service.delete_task(workspace_id,task_id,user)
         return JSONResponse(status_code=200, content={"message": "Task deleted successfully"})
@@ -194,8 +198,8 @@ def delete_task(request:Request,workspace_id:str,task_id:str):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/workspaces/{workspace_id}/tasks/{task_id}/mark-complete")
-def mark_task_completion(request: Request, workspace_id:str,taskboard_id: str, task_id: str):
-    user = check_login_and_return_user(user)
+def mark_task_completion(request: Request, workspace_id:str,task_id: str):
+    user = check_login_and_return_user(request)
     try:
         Service.mark_task_as_complete(workspace_id,task_id,user)
         return JSONResponse(status_code=200, content={"message": "Task marked as completed successfully"})
@@ -206,7 +210,7 @@ def mark_task_completion(request: Request, workspace_id:str,taskboard_id: str, t
 
 @app.post("/workspaces/{workspace_id}/delete",response_class=RedirectResponse)
 def delete_taskboard(request:Request,workspace_id:str):
-    user = check_login_and_return_user(user)
+    user = check_login_and_return_user(request)
     try:
         if user:
             Service.delete_workspace(workspace_id,user)
@@ -217,6 +221,21 @@ def delete_taskboard(request:Request,workspace_id:str):
     except Exception as e:
         print("Error while deleting:", str(e))
         return RedirectResponse(
-            url=f"/taskboards",
+            url=f"/workspaces/{workspace_id}/?error={str(e)}",
             status_code=303
         )
+    
+
+@app.get('/workspaces/{workspace_id}/tasks/{task_id}')
+def get_task(request:Request,workspace_id:str,task_id:str):
+    user = check_login_and_return_user(request)
+    try:
+        task = Service.get_task(workspace_id,task_id,user)
+        print('recieved task')
+        print(task)
+        if not task:
+            return JSONResponse(status_code=404, content={"error": "Task not found"})
+        return JSONResponse(status_code=200, content=task)
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"error": str(e)})

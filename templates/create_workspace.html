@@ -198,12 +198,11 @@
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div class="flex items-center">
                                         <input class="task-complete-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" 
-                                               type="checkbox" 
-                                               value="{{ task.id }}" 
-                                               id="task-{{ task.id }}"
-                                               data-task-id="{{ task.id }}"
-                                               {% if task.status == 'completed' %}checked{% endif %}
-                                               {% if not is_board_member %}disabled{% endif %}>
+       type="checkbox" 
+       value="{{ task.id }}" 
+       id="task-{{ task.id }}"
+       data-task-id="{{ task.id }}"
+       {% if task.status == 'completed' %}checked{% endif %}
                                     </div>
                                 </td>
                                 <td class="px-3 py-4 whitespace-nowrap">
@@ -788,16 +787,20 @@
         }
         
         document.querySelectorAll('.task-complete-checkbox:checked').forEach(checkbox => {
-            checkbox.disabled = true;
-            
-            const taskRow = checkbox.closest('tr');
-            const editBtn = taskRow.querySelector('.edit-task-btn');
-            if (editBtn) {
-                editBtn.disabled = true;
-                editBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                editBtn.setAttribute('title', 'Completed tasks cannot be edited');
-            }
-        });
+    const taskRow = checkbox.closest('tr');
+    const taskTitle = taskRow.querySelector('td:nth-child(2) .text-sm');
+    const editBtn = taskRow.querySelector('.edit-task-btn');
+    
+    // Apply visual styling
+    taskTitle.classList.add('line-through', 'text-gray-400');
+    
+    // Still disable edit button for completed tasks if needed
+    if (editBtn) {
+        editBtn.disabled = true;
+        editBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        editBtn.setAttribute('title', 'Completed tasks cannot be edited');
+    }
+});
         
         document.querySelectorAll('.task-complete-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
@@ -828,7 +831,7 @@
                 updateCounters();
                 
                 const boardId = document.querySelector('input[name="board_id"]').value;
-                fetch(`/workspaces/${boardId}/tasks/${taskId}/toggle-complete`, {
+                fetch(`/workspaces/${boardId}/tasks/${taskId}/mark-complete`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

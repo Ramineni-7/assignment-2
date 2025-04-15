@@ -4,7 +4,7 @@ from google.cloud import firestore
 import google.oauth2.id_token
 from fastapi import Request
 from fastapi import HTTPException
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from pydantic_models.models import Task, User, Workspace, WorkspaceSummary
 
@@ -14,6 +14,39 @@ firebase_request_adapter = requests.Request()
 
 class Service:
 
+
+    @staticmethod
+    def get_task(workspace_id:str,task_id:str,user:User):
+        try:
+            workspace = Service.get_workspace(user,workspace_id)
+            if user['email'] not in workspace['board']['users'] and workspace['board']['created_by']!=user['email']:
+                raise Exception("you are not allowed to view this")
+            doc_ref = firestore_db.collection('tasks').document(task_id)
+            task = doc_ref.get()
+            if not task.exists:
+                raise Exception("Invalid task id")
+            task_data = task.to_dict()
+            task_data["id"] = task_id
+            
+            if task_data.get("due_date"):
+                if isinstance(task_data["due_date"], date):
+                    task_data["due_date"] = task_data["due_date"].strftime('%Y-%m-%d')
+                    
+            if task_data.get("due_time"):
+                if isinstance(task_data["due_time"], time):
+                    task_data["due_time"] = task_data["due_time"].strftime('%H:%M')
+                    
+            if task_data.get("completed_at"):
+                if isinstance(task_data["completed_at"], datetime):
+                    task_data["completed_at"] = task_data["completed_at"].strftime('%b %d, %Y at %I:%M %p')
+            if task_data.get("created_at"):
+                if isinstance(task_data["created_at"], datetime):
+                    task_data["created_at"] = task_data["created_at"].strftime('%Y-%m-%d %H:%M:%S')
+            return task_data
+        except Exception as e:
+            print(e)
+            raise Exception(e)
+        
     @staticmethod
     def delete_workspace(workspace_id:str,user:User):
         try:
@@ -28,7 +61,7 @@ class Service:
             if workspace_data.get("created_by") != user['email']:
                 raise Exception("Only the creator of the workspace can delete the board")
 
-            if len(workspace_data.get("users"))>1:
+            if len(workspace_data.get("users"))>=1:
                 raise Exception("Remove all users from the workspace before deleting it")
 
             doc_ref.delete()
@@ -40,20 +73,26 @@ class Service:
     def delete_task(workspace_id:str,task_id:str,user:User):
         try:
             workspace = Service.get_workspace(user,workspace_id)
-            if user['email'] not in workspace['users'] and workspace['board']['created_by']!=user['email']:
-                raise Exception("you are not allowed to do this")
+
+            if not workspace or 'board' not in workspace:
+                raise Exception("Invalid workspace or missing board data")
+            if user['email'] not in workspace['board']['users'] and workspace['board']['created_by'] != user['email']:
+                raise Exception("You are not allowed to do this")
+
             doc_ref = firestore_db.collection('tasks').document(task_id)
             task = doc_ref.get()
             if not task.exists:
                 raise Exception("Invalid task id")
             doc_ref.delete() 
         except Exception as e:
+            print(e)
             raise Exception(str(e))
         
     @staticmethod
     def mark_task_as_complete(workspace_id:str,task_id: str,user:User):
         try:
-            doc_ref = firestore_db.collection('workspace_id').document(workspace_id)
+
+            doc_ref = firestore_db.collection('workspaces').document(workspace_id)
             doc = doc_ref.get()
             if not doc.exists:
                 raise Exception("Invalid workspace Id")
@@ -76,13 +115,14 @@ class Service:
                 "due_time": current_datetime.time().strftime("%H:%M:%S")  
             })
         except Exception as e:
+            print(e)
             raise Exception(str(e))
 
     @staticmethod
     def remove_user_in_tasks(workspace_id,users):
         try:
             wokrspace_ref = firestore_db.collection("tasks")
-            matching_tasks = wokrspace_ref.where("board_id", "==", workspace_id).get()
+            matching_tasks = wokrspace_ref.where("workspace_id", "==", workspace_id).get()
 
             for task_doc in matching_tasks:
                 task_data = task_doc.to_dict()
@@ -101,13 +141,12 @@ class Service:
     @staticmethod
     def create_task(workspace_id:str,task:Task,user:User):
         try:
-            print("it a match")
             workspace = Service.get_workspace(user,workspace_id)
-            if workspace["board"]["created_by"] != user["email"] and user.email not in workspace['users']:
+            if workspace["board"]["created_by"] != user["email"] and user.email not in workspace['board']['users']:
                 raise PermissionError("Only the memebers can add tasks to this workspace.")
             existing_task = (
                 firestore_db.collection('tasks')
-                .where(filter=firestore.FieldFilter("board_id", "==", task.board_id))
+                .where(filter=firestore.FieldFilter("board_id", "==", task.workspace_id))
                 .where(filter=firestore.FieldFilter("title", "==", task.title))
                 .limit(1)
                 .get()
@@ -128,12 +167,15 @@ class Service:
             raise Exception(str(e))
 
     @staticmethod
-    def update_task(workspace_id:str,task:Task,user:User,task_id):
+    def update_task(workspace_id:str,task_id:str,task:Task,user:User):
         try:
             workspace = Service.get_workspace(user,workspace_id)
-            if workspace["board"]["created_by"] != user["email"] and user.email not in workspace['users']:
+            print(user)
+            if workspace["board"]["created_by"] != user["email"] and user['email'] not in workspace['board']['users']:
                 raise PermissionError("Only the memebers can add/update tasks to this workspace.")
-            if task.board_id != workspace_id:
+            print(task.workspace_id)
+            print(workspa)
+            if task.workspace_id != workspace_id:
                 raise Exception("Task does not belongs to given workspace id")
             task_ref = firestore_db.collection("tasks").document(task_id)
             snapshot = task_ref.get()
@@ -141,12 +183,14 @@ class Service:
             if not snapshot.exists:
                 raise Exception("Invalid task id please enter valid task id")
             if task.due_date:
-                task_dict["due_date"] = task.due_date.isoformat()  
+                task_dict['due_date'] = task.due_date.isoformat()
             if task.due_time:
-                task_dict["due_time"] = task.due_time.strftime("%H:%M") 
-            
+                task_dict['due_time'] = task.due_time.strftime("%H:%M")  
+            task_ref.update(task_dict)
+            print(task_dict)
         except Exception as e:
-            pass
+            print(e)
+            raise Exception(str(e))
 
     @staticmethod
     def check_login_and_return_user(request):
@@ -162,12 +206,11 @@ class Service:
             email = user_token.get("email")
             if not email:
                 return None
-            print("verified")
             user = {
                 "email": email,
                 "name": email.split("@")[0]
             }
-            print(user)
+
             return user
         except Exception:
             return None
@@ -202,12 +245,10 @@ class Service:
         try:
             summaries = []
             seen_ids = set()
-            print(user)
-            print(type(user))
+
             member_query = firestore_db.collection("workspaces").where("users", "array_contains", user['email']).stream()
             creator_query = firestore_db.collection("workspaces").where("created_by", "==", user['email']).stream()
-            print(member_query)
-            print(creator_query)
+
 
             for doc in list(member_query) + list(creator_query):
                 if doc.id in seen_ids:
@@ -255,10 +296,8 @@ class Service:
     
     @staticmethod
     def get_all_users() -> List[User]:
-        print('in service users')
+
         users =  [doc.to_dict() for doc in firestore_db.collection("users").stream()]
-        print('problem is here')
-        print('users')
         return users
     
     @staticmethod
@@ -296,7 +335,6 @@ class Service:
             }
             return response
         except Exception as e:
-            print(str(e))
             raise Exception(str(e))
         
     @staticmethod
@@ -349,12 +387,14 @@ class Service:
     @staticmethod
     def get_tasks(workspace_id: str) -> List[Dict[str, Any]]:
         try:
+
             tasks_ref = firestore_db.collection('tasks')
-            tasks_query = tasks_ref.where('board_id', '==', workspace_id).stream()
+            tasks_query = tasks_ref.where('workspace_id', '==', workspace_id).stream()
             task_list = []
 
             for task_doc in tasks_query:
                 task_data = task_doc.to_dict()
+
                 task_data['id'] = task_doc.id
 
                 

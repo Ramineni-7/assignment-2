@@ -36,7 +36,26 @@ class Task(BaseModel):
     due_time: Optional[time] = None
     completed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
-    unassigned: bool = False
+    @classmethod
+    def from_form(
+        cls,
+        title: str = Form(...),
+        status: str = Form(...),
+        assigned_to: str = Form(""),
+        details: Optional[str] = Form(None),
+        due_date: Optional[date] = Form(None),
+        due_time: Optional[time] = Form(None),
+    ):
+        return cls(
+            title=title,
+            workspace_id="",
+            status=status,
+            details=details,
+            assigned_to=[email.strip() for email in assigned_to.split(",") if email.strip()] if assigned_to else [],
+            due_date=due_date,
+            due_time=due_time,
+            created_at=datetime.utcnow(),
+        )
     
 
 class User(BaseModel):

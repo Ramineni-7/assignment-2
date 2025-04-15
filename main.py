@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Request,Form, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +21,7 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
+    create_user_into_firestore(request)
     return templates.TemplateResponse(
         "home.html",
         {"request": request}
@@ -105,3 +107,116 @@ def create_workspace(request:Request,workspace: Workspace = Depends(Workspace.fr
              "board": None,
              "error":str(e)
             })
+    
+@app.get("/workspaces/{workspace_id}")
+def get_workspace(request:Request,workspace_id:str,error: Optional[str] = None):
+    user = Service.check_login_and_return_user(request)
+    try:
+        result = Service.get_workspace(user,workspace_id)
+        return templates.TemplateResponse("create_workspace.html", {
+            "request": request,
+            "users": result['users'],
+            "current_user": result['current_user'],
+            "board": result['board'],
+            "tasks": result['tasks'],
+            "error": error 
+        })
+    except Exception as e:
+        pass
+
+@app.post("/workspaces/{workspace_id}")
+def update_workspace(request: Request, workspace_id: str, workspace: Workspace = Depends(Workspace.from_form)):
+    user = Service.check_login_and_return_user(request)
+    try:
+       result = Service.update_workspace(request,workspace_id,user,workspace)
+       return templates.TemplateResponse("create_workspace.html", {
+            "request": request,
+            "users": Service.get_all_users(),
+            "current_user": user,
+            "board": result,
+            "tasks": result['tasks']
+        })
+    except Exception as e:
+        task_board = Service.get_workspace(user,workspace_id,)
+        tasks =[]
+        return templates.TemplateResponse("add-task-board.html", {
+            "request": request,
+            "users": Service.get_all_users(),
+            "current_user": user,
+            "board": task_board,
+            "tasks": tasks,
+            "error": str(e) 
+        })
+    
+@app.post("/workspaces/{workspace_id}/tasks",response_class=RedirectResponse)
+def create_task(request:Request,workspace_id:str,task:Task=Depends(Task.from_form)):
+    user=check_login_and_return_user(request)
+    try:
+        if user:
+            Service.create_task(workspace_id,task,user)
+            return RedirectResponse(
+            url=f"/workspaces/{workspace_id}",
+            status_code=303
+        )
+        else :
+            return RedirectResponse(url="/",status_code=303)
+    except Exception as e:
+        return RedirectResponse(
+            url=f"/workspaces/{workspace_id}?error={str(e)}",
+            status_code=303
+        )
+
+@app.post('/workspaces/{workspace_id}/tasks/{task_id}',response_class=RedirectResponse)
+def update_task(request:Request,workspace_id,task_id,task:Task=Depends(Task.from_form)):
+    user = check_login_and_return_user(request)
+    try:
+        if user:
+            Service.update_task(workspace_id,task,user,task_id)
+            return RedirectResponse(
+            url=f"/workspaces/{workspace_id}",
+            status_code=303
+        )
+        else:
+            return RedirectResponse(url="/",status_code=303)
+    except Exception as e:
+       return RedirectResponse(
+            url=f"/workspaces/{workspace_id}?error={str(e)}",
+            status_code=303
+        )
+    
+@app.delete("/workspaces/{workspace_id}/tasks/{task_id}")
+def delete_task(request:Request,workspace_id:str,task_id:str):
+    user = check_login_and_return_user(user)
+    try:
+        Service.delete_task(workspace_id,task_id,user)
+        return JSONResponse(status_code=200, content={"message": "Task deleted successfully"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.post("/workspaces/{workspace_id}/tasks/{task_id}/mark-complete")
+def mark_task_completion(request: Request, workspace_id:str,taskboard_id: str, task_id: str):
+    user = check_login_and_return_user(user)
+    try:
+        Service.mark_task_as_complete(workspace_id,task_id,user)
+        return JSONResponse(status_code=200, content={"message": "Task marked as completed successfully"})
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+
+@app.post("/workspaces/{workspace_id}/delete",response_class=RedirectResponse)
+def delete_taskboard(request:Request,workspace_id:str):
+    user = check_login_and_return_user(user)
+    try:
+        if user:
+            Service.delete_workspace(workspace_id,user)
+            return RedirectResponse(
+            url=f"/workspaces",
+            status_code=303
+        )
+    except Exception as e:
+        print("Error while deleting:", str(e))
+        return RedirectResponse(
+            url=f"/taskboards",
+            status_code=303
+        )

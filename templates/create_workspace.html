@@ -52,7 +52,7 @@
             <h2 class="text-xl font-semibold text-white">Workspace Configuration</h2>
         </div>
         <div class="p-6">
-            <form action="{% if board %}/taskboards/{{ board.id }}{% else %}/workspaces/create{% endif %}" method="post" class="config-form">
+            <form action="{% if board %}/workspaces/{{ board.id }}{% else %}/workspaces/create{% endif %}" method="post" class="config-form">
                 <div class="mb-6">
                     <label for="title" class="block text-gray-700 font-medium mb-2">Workspace Title</label>
                     <input type="text" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" 
@@ -138,11 +138,11 @@
                     <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
                         {% if board %}Update Workspace{% else %}Create Workspace{% endif %}
                     </button>
-                    <a href="/taskboards" class="ml-4 px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out">
+                    <a href="/workspaces" class="ml-4 px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out">
                         Cancel
                     </a>
                     {% else %}
-                    <a href="/taskboards" class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out">
+                    <a href="/workspaces" class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out">
                         Back to Workspaces
                     </a>
                     {% endif %}
@@ -672,7 +672,7 @@
                         data-bs-dismiss="modal">
                     Cancel
                 </button>
-                <form action="/taskboards/{{ board.id if board else '' }}/delete" method="post">
+                <form action="/workspaces/{{ board.id if board else '' }}/delete" method="post">
                     <button type="submit" class="ml-3 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
                         Delete Workspace
                     </button>
@@ -828,7 +828,7 @@
                 updateCounters();
                 
                 const boardId = document.querySelector('input[name="board_id"]').value;
-                fetch(`/taskboards/${boardId}/tasks/${taskId}/toggle-complete`, {
+                fetch(`/workspaces/${boardId}/tasks/${taskId}/toggle-complete`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -890,7 +890,7 @@
                 document.getElementById('view-task-assigned').innerHTML = '';
                 document.getElementById('view-task-completed-section').classList.add('hidden');
                 
-                fetch(`/taskboards/${boardId}/tasks/${taskId}`)
+                fetch(`/workspaces/${boardId}/tasks/${taskId}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to load task details');
@@ -980,7 +980,7 @@
                     formData.append('completed_at', now.toISOString());
                 }
                 
-                fetch(`/taskboards/${boardId}/tasks`, {
+                fetch(`/workspaces/${boardId}/tasks`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json, text/html'
@@ -1056,7 +1056,7 @@
                     checkbox.checked = false;
                 });
                 
-                fetch(`/taskboards/${boardId}/tasks/${taskId}`)
+                fetch(`/workspaces/${boardId}/tasks/${taskId}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to load task details');
@@ -1121,7 +1121,7 @@
                     formData.append('completed_at', now.toISOString());
                 }
                 
-                fetch(`/taskboards/${boardId}/tasks/${taskId}`, {
+                fetch(`/workspaces/${boardId}/tasks/${taskId}`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json, text/html'
@@ -1189,7 +1189,7 @@
                 const taskId = this.dataset.taskId;
                 const boardId = document.querySelector('input[name="board_id"]').value;
                 
-                fetch(`/taskboards/${boardId}/tasks/${taskId}`, {
+                fetch(`/workspaces/${boardId}/tasks/${taskId}`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json'

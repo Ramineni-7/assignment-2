@@ -18,6 +18,8 @@ class Workspace(BaseModel):
         created_by: str = Form(...),
         selected_users: str = Form("")
     ):
+        print('in form form ')
+        print(selected_users)
         return cls(
             title=title,
             created_by=created_by,

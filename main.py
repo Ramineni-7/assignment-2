@@ -113,6 +113,7 @@ def get_workspace(request:Request,workspace_id:str,error: Optional[str] = None):
     user = Service.check_login_and_return_user(request)
     try:
         result = Service.get_workspace(user,workspace_id)
+        print("resukt unb aoi ",result['board']['users'])
         return templates.TemplateResponse("create_workspace.html", {
             "request": request,
             "users": result['users'],
@@ -129,6 +130,7 @@ def update_workspace(request: Request, workspace_id: str, workspace: Workspace =
     print("but wby")
     user = Service.check_login_and_return_user(request)
     try:
+       print(workspace.users)
        result = Service.update_workspace(request,workspace_id,user,workspace)
        return templates.TemplateResponse("create_workspace.html", {
             "request": request,
@@ -164,6 +166,7 @@ def create_task(request:Request,workspace_id:str,task:Task=Depends(Task.from_for
         else :
             return RedirectResponse(url="/",status_code=303)
     except Exception as e:
+        print(e)
         return RedirectResponse(
             url=f"/workspaces/{workspace_id}?error={str(e)}",
             status_code=303

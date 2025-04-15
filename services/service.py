@@ -61,7 +61,7 @@ class Service:
             if workspace_data.get("created_by") != user['email']:
                 raise Exception("Only the creator of the workspace can delete the board")
 
-            if len(workspace_data.get("users"))>=1:
+            if len(workspace_data.get("users"))>1:
                 raise Exception("Remove all users from the workspace before deleting it")
 
             doc_ref.delete()
@@ -146,13 +146,12 @@ class Service:
                 raise PermissionError("Only the memebers can add tasks to this workspace.")
             existing_task = (
                 firestore_db.collection('tasks')
-                .where(filter=firestore.FieldFilter("board_id", "==", task.workspace_id))
+                .where(filter=firestore.FieldFilter("workspace_id", "==", task.workspace_id))
                 .where(filter=firestore.FieldFilter("title", "==", task.title))
-                .limit(1)
                 .get()
             )
-
-            if len(existing_task) > 0:
+            print(existing_task)
+            if len(existing_task)>0:
                 raise Exception("Tasks in the same workspace must have different names")
             task_dict = task.dict(exclude_none=True)
             if task.due_date:
@@ -308,6 +307,7 @@ class Service:
                 raise HTTPException(status_code=400, detail="Workspace name already exists. Please choose a different name.")
             existing_users_docs = firestore_db.collection("users").stream()
             existing_emails = {doc.to_dict().get("email") for doc in existing_users_docs}
+            workspace.users = [u for u in workspace.users if u != user['email']]
             invalid_users = [u for u in workspace.users if u not in existing_emails]
             if invalid_users:
                 raise HTTPException(
@@ -332,6 +332,8 @@ class Service:
             workspace_users = workspace_data.get("users", [])
             if not (user['email'] == created_by or user['email'] in workspace_users):
                 raise PermissionError("User does not have access to this workspace.")
+            workspace_users.append(workspace_data['created_by'])
+            print(workspace_users)
             response = {
                 'users':users,
                 'current_user':user,
@@ -340,6 +342,7 @@ class Service:
             }
             return response
         except Exception as e:
+            print(e)
             raise Exception(str(e))
         
     @staticmethod
